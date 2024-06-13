@@ -1,4 +1,4 @@
-package com.example.botika_va
+package online.botika.va
 
 import androidx.annotation.NonNull
 

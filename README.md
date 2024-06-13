@@ -5,13 +5,12 @@ This is the Botika VA SDK Flutter
 ## Installation
 
 To integrate the plugin in your Flutter App, you need
-to add the plugin to your `pubspec.yaml` (for right now, just local ya.. hehe):
+to add the plugin to your `pubspec.yaml`
 
 ```yaml
 
 dependencies:
-  botika_va : 
-    path: ./../../botika_va/
+  botika_va : '^0.1.1'
 
 ```
 
