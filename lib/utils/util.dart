@@ -1,12 +1,18 @@
+import 'dart:convert';
+
 String removeHtmlTagFromString(String? text) {
   if (text == null) {
     return "";
   }
-  var listTag = ["<B>", "</B>"];
-  for (String i in listTag) {
-    text = text.toString().replaceAll(i, "");
+
+  List<String> brs = ['<br>', '<br/>', '<br />'];
+  for (String br in brs) {
+    text = text!.replaceAll(br, '\n');
+    text = text.replaceAll(br.toUpperCase(), '\n');
   }
-  return text!.replaceAll("<BR>", "\n");
+
+  RegExp htmlTagRegExp = RegExp(r'<[^>]*>');
+  return text!.replaceAll(htmlTagRegExp, '');
 }
 
 List splice(List list, int index, [num howMany = 0, dynamic elements]) {
@@ -19,10 +25,20 @@ List splice(List list, int index, [num howMany = 0, dynamic elements]) {
 }
 
 String printDuration(Duration duration) {
-  String negativeSign = duration.isNegative ? '-' : '';
+  //String negativeSign = duration.isNegative ? '-' : '';
   String twoDigits(int n) => n.toString().padLeft(2, "0");
   String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60).abs());
   String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60).abs());
   //return "$negativeSign${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   return "$twoDigitMinutes:$twoDigitSeconds";
+}
+
+String idGenerator() {
+  DateTime now = DateTime.now();
+  return now.microsecondsSinceEpoch.toString();
+}
+
+String toBase64(String val) {
+  List<int> bytes = utf8.encode(val);
+  return base64.encode(bytes);
 }

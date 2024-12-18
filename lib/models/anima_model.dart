@@ -1,3 +1,5 @@
+import 'package:botika_va/models/config.dart';
+
 class AnimaVideoRequestModel {
   String? id;
   String? text;
@@ -6,7 +8,7 @@ class AnimaVideoRequestModel {
   String? language;
   bool? enhance;
 
-  bool isInternal;
+  RequestVideoType requestVideoType;
 
   AnimaVideoRequestModel({
     this.id,
@@ -15,7 +17,7 @@ class AnimaVideoRequestModel {
     this.voice,
     this.language,
     this.enhance = false,
-    required this.isInternal,
+    required this.requestVideoType,
   });
 
   Map<String, dynamic> toJson() {
@@ -26,10 +28,17 @@ class AnimaVideoRequestModel {
     data['voice'] = voice;
     data['language'] = language;
     data['enhance'] = enhance;
-    data["chunk_size"] = 60;
 
-    if (isInternal) {
-      data["type"] = "internal";
+    switch (requestVideoType) {
+      case RequestVideoType.chunk:
+        data["type"] = "chunk";
+        data["chunk_size"] = 60;
+        break;
+      case RequestVideoType.internal:
+        data["type"] = "internal";
+        break;
+      case RequestVideoType.none:
+        break;
     }
 
     return data;
@@ -59,18 +68,18 @@ class AnimaVideoResponseModel {
 
 class DownloadVideoModel {
   String? senderId;
-  String? chunk;
+  String? videoId;
   String? returnType;
 
   bool isInternal;
-  bool downloaded = false;
-  List<int>? result;
+  DownloadVideoMode downloadVideoMode;
 
   DownloadVideoModel({
     this.senderId,
-    this.chunk,
+    this.videoId,
     this.returnType = "blob",
     required this.isInternal,
+    required this.downloadVideoMode,
   });
 
   Uri getUri() {
@@ -85,13 +94,60 @@ class DownloadVideoModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = senderId;
-    data['chunk'] = chunk;
+
+    switch (downloadVideoMode) {
+      case DownloadVideoMode.chunk:
+        data['chunk'] = videoId;
+        break;
+      case DownloadVideoMode.video:
+        data['video'] = videoId;
+        break;
+    }
+
     data['return'] = returnType;
 
     if (isInternal) {
       data["internal"] = 'true';
     }
 
+    return data;
+  }
+}
+
+class AnimaAudioRequestModel {
+  String? filetype;
+  String? language;
+  bool? paidPlan;
+  String? returnType;
+  String? text;
+  String? voice;
+
+  AnimaAudioRequestModel({
+    this.filetype = "mpeg",
+    this.paidPlan = false,
+    this.returnType = "url",
+    this.language,
+    this.text,
+    this.voice,
+  });
+
+  AnimaAudioRequestModel.fromJson(Map<String, dynamic> json) {
+    filetype = json['filetype'];
+    language = json['language'];
+    paidPlan = json['paid_plan'];
+    returnType = json['return'];
+    text = json['text'];
+    voice = json['voice'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['filetype'] = filetype;
+    data['language'] = language;
+    data['paid_plan'] = paidPlan;
+    data['return'] = returnType;
+    data['text'] = text;
+    data['voice'] = voice;
     return data;
   }
 }

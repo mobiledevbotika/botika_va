@@ -1,4 +1,5 @@
 import 'dart:convert';
+//import 'dart:developer';
 import 'package:http/http.dart' as http;
 
 class BaseProvider {
@@ -30,6 +31,47 @@ class BaseProvider {
     } catch (e) {
       errorMessage = "$e";
     }
+
+    // log("luna - $body");
+    // log("luna - $header");
+    // log("luna - ${res!.body}");
+
+    if (res == null) {
+      return null;
+    }
+
+    statusCode = res.statusCode;
+
+    try {
+      String bodyString = utf8.decode(res.bodyBytes);
+      responseBody = jsonDecode(bodyString.trim());
+    } catch (e) {
+      errorMessage = "$e";
+      return null;
+    }
+
+    return responseBody;
+  }
+
+  Future<Map<String, dynamic>?> get(
+    String url, {
+    Map<String, String>? header,
+  }) async {
+    Map<String, dynamic>? responseBody;
+    http.Response? res;
+
+    try {
+      res = await http.get(
+        Uri.parse(url),
+        headers: header,
+      );
+    } catch (e) {
+      errorMessage = "$e";
+    }
+
+    // log("luna - $url");
+    // log("luna - $header");
+    // log("luna - ${res!.body}");
 
     if (res == null) {
       return null;

@@ -1,6 +1,5 @@
 import 'dart:convert';
-import 'package:flutter_client_sse/constants/sse_request_type_enum.dart';
-import 'package:flutter_client_sse/flutter_client_sse.dart';
+import 'package:botika_va/utils/sse.dart';
 
 class SseService {
   final Map<String, SseServiceHandler> _subscribers =
@@ -35,10 +34,10 @@ class SseService {
       "Cache-Control": "no-cache",
     };
     SSEClient.subscribeToSSE(
-      method: SSERequestType.GET,
+      method: SSERequestType.get,
       url: url,
       header: header,
-    ).listen(onData, onDone: onDone, onError: onError, cancelOnError: false);
+    ).listen(onData, onDone: onDone, onError: onError);
   }
 
   void onError(error) {

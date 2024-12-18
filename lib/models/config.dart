@@ -1,9 +1,17 @@
+import 'package:botika_va/providers/jwt_provider.dart';
+
+enum RequestVideoType { chunk, internal, none }
+
+enum DownloadVideoMode { chunk, video }
+
+enum ResponseVaType { api, sse, socket }
+
 class VaConfig {
   // weebhook
-  String? webhookAccessToken;
-  String? weebHookId;
-  String? weebHookRecipientId;
-  String? weebHooksenderId;
+  String? webHookAccessToken;
+  String? webHookId;
+  String? webHookRecipientId;
+  String? webHooksenderId;
 
   // anima
   String? animaAccessToken;
@@ -19,13 +27,23 @@ class VaConfig {
   String? profileAccessToken;
   String? profileBotId;
 
-  bool? isInternal;
+  // socket
+  String? jwt;
+
+  // extra shenanigans
+  // dont ask me, its just work around
+  bool? voiceOnly;
+  ResponseVaType responseVaType;
+
+  RequestVideoType? requestVideoType;
+  DownloadVideoMode? downloadVideoMode;
+  bool? internalDownload;
 
   VaConfig({
-    this.webhookAccessToken,
-    this.weebHookId,
-    this.weebHookRecipientId,
-    this.weebHooksenderId,
+    this.webHookAccessToken,
+    this.webHookId,
+    this.webHookRecipientId,
+    this.webHooksenderId,
     this.animaAccessToken,
     this.animaRequestId,
     this.animaTemplate,
@@ -36,6 +54,29 @@ class VaConfig {
     this.profilingToken,
     this.profileAccessToken,
     this.profileBotId,
-    this.isInternal = false,
+    this.voiceOnly = false,
+    this.responseVaType = ResponseVaType.api,
+    this.requestVideoType = RequestVideoType.none,
+    this.downloadVideoMode = DownloadVideoMode.video,
+    this.internalDownload = false,
   });
+
+  Future<bool> login() async {
+    if (webHookAccessToken == null || animaAccessToken == null) {
+      return false;
+    }
+
+    JwtProvider jwtProvider = JwtProvider();
+    String? result = await jwtProvider.getJwt(
+      webHookAccessToken,
+      animaAccessToken,
+    );
+    if (result == null) {
+      return false;
+    }
+
+    this.jwt = result;
+
+    return true;
+  }
 }

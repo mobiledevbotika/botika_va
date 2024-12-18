@@ -44,15 +44,19 @@ class AnimaProvider extends BaseProvider {
     return data;
   }
 
-  Future<String?> getVideoUrl(
-    VaConfig config,
-    DownloadVideoModel payload,
-  ) async {
-    String? data;
+  Future<String?> generateAudio(VaConfig config, String text) async {
+    String? videoUrl;
 
-    payload.returnType = "url";
+    AnimaAudioRequestModel payload = AnimaAudioRequestModel(
+      filetype: "mpeg",
+      paidPlan: false,
+      returnType: "url",
+      language: config.animaLanguage,
+      voice: config.animaVoice,
+      text: text,
+    );
 
-    String url = "$baseAnimaUrl/video/download";
+    String url = "$baseAnimaUrl/tts";
     Map<String, dynamic> body = payload.toJson();
     Map<String, String> header = {
       "Authorization": "Bearer ${config.animaAccessToken}",
@@ -61,6 +65,44 @@ class AnimaProvider extends BaseProvider {
     Map<String, dynamic>? response = await post(
       url,
       body,
+      header: header,
+    );
+    if (response == null) {
+      return null;
+    }
+
+    try {
+      bool ok = response['status'] ?? false;
+
+      if (!ok) {
+        errorMessage = "${response['message']}";
+        return null;
+      }
+
+      videoUrl = response['data'];
+    } catch (e) {
+      //
+      errorMessage = "$e";
+      return null;
+    }
+
+    return videoUrl;
+  }
+
+  Future<String?> getVideoUrl(
+    VaConfig config,
+    DownloadVideoModel payload,
+  ) async {
+    String? data;
+
+    payload.returnType = "url";
+
+    Map<String, String> header = {
+      "Authorization": "Bearer ${config.animaAccessToken}",
+    };
+
+    Map<String, dynamic>? response = await get(
+      payload.getUri().toString(),
       header: header,
     );
     if (response == null) {
@@ -90,7 +132,7 @@ class AnimaProvider extends BaseProvider {
     AnimaVideoResponseModel? response = await generateVideo(
       config,
       AnimaVideoRequestModel(
-        isInternal: config.isInternal ?? false,
+        requestVideoType: config.requestVideoType!,
         id: config.animaRequestId,
         template: config.animaTemplate,
         voice: config.animaVoice,
@@ -103,17 +145,32 @@ class AnimaProvider extends BaseProvider {
       return [];
     }
 
-    if (response.videoChunk == null) {
-      return [];
+    List<DownloadVideoModel> payloads = [];
+
+    if (config.downloadVideoMode == DownloadVideoMode.video) {
+      payloads.add(
+        DownloadVideoModel(
+          senderId: config.animaSenderId,
+          videoId: response.video,
+          downloadVideoMode: config.downloadVideoMode!,
+          isInternal: config.internalDownload!,
+        ),
+      );
+
+      return payloads;
     }
 
-    List<DownloadVideoModel> payloads = [];
+    if (response.videoChunk == null) {
+      return payloads;
+    }
+
     for (String chunk in response.videoChunk!) {
       payloads.add(
         DownloadVideoModel(
-          isInternal: config.isInternal ?? false,
+          downloadVideoMode: config.downloadVideoMode!,
+          isInternal: config.internalDownload!,
           senderId: config.animaSenderId,
-          chunk: chunk,
+          videoId: chunk,
         ),
       );
     }

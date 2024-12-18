@@ -6,16 +6,21 @@ class WebHookProvider extends BaseProvider {
   Future<WebHookModel?> send(VaConfig config, WebHookModel payload) async {
     WebHookModel? data;
 
-    payload.id = config.weebHookId;
+    payload.id = config.webHookId;
 
     if (payload.data != null) {
       payload.data!.recipientId = null;
     }
 
-    String url = "https://webhook.botika.online/webhook/";
+    String? url = "https://webhook.botika.online/webhook/";
+
+    if (config.responseVaType == ResponseVaType.socket) {
+      url = "${url}webhook_push.php?method=socket";
+    }
+
     Map<String, dynamic> body = payload.toJson();
     Map<String, String> header = {
-      "Authorization": "Bearer ${config.webhookAccessToken}",
+      "Authorization": "Bearer ${config.webHookAccessToken}",
     };
 
     Map<String, dynamic>? response = await post(

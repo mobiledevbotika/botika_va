@@ -1,4 +1,5 @@
 import 'package:botika_va/utils/util.dart';
+import 'package:remove_emoji/remove_emoji.dart';
 
 class WebHookModel {
   String? id;
@@ -115,6 +116,7 @@ class MessageModel {
 
     if (type == "text") {
       value = removeHtmlTagFromString("$value");
+
       if ((value as String).contains("**id**")) {
         value = (value as String).replaceAll("**id**", "");
         lang = "id";
@@ -143,12 +145,23 @@ class MessageModel {
     return data;
   }
 
+  List<ButtonModel> getButtons() {
+    List<ButtonModel> returns = [];
+    if (type == "button") {
+      List<dynamic> buttons = value as List<dynamic>;
+      for (dynamic b in buttons) {
+        returns.add(ButtonModel.fromJson(b));
+      }
+    }
+    return returns;
+  }
+
   List<String> getChunk() {
     if (type != "text") {
       return [];
     }
 
-    return splitTextAtNearestDot(value ?? "");
+    return splitTextAtNearestDot(RemoveEmoji().clean("$value"));
   }
 
   List<String> splitTextAtNearestDot(String text, {int? chunkSize = 10}) {
@@ -180,5 +193,27 @@ class MessageModel {
       }
     }
     return false;
+  }
+}
+
+class ButtonModel {
+  String? type;
+  String? text;
+  String? payload;
+
+  ButtonModel({this.type, this.text, this.payload});
+
+  ButtonModel.fromJson(Map<String, dynamic> json) {
+    type = json['type'];
+    text = json['text'];
+    payload = json['payload'];
+  }
+
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> data = <String, dynamic>{};
+    data['type'] = type;
+    data['text'] = text;
+    data['payload'] = payload;
+    return data;
   }
 }

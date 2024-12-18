@@ -1,4 +1,13 @@
 include: package:flutter_lints/flutter.yaml
 
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options
+linter:
+  rules:
+    # Custom lint rules
+    - avoid_print
+    - prefer_const_constructors
+
+analyzer:
+  errors:
+    # Customize errors and warnings
+    unused_import: warning
+    dead_code: ignore
